@@ -1,9 +1,10 @@
 package com.delivery.ms.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-
 import org.springframework.stereotype.Controller;
 
 import com.delivery.ms.dto.CustomerOrder;
@@ -22,10 +23,12 @@ public class DeliveryController {
 
 	@Autowired
 	private KafkaTemplate<String, DeliveryEvent> kafkaTemplate;
+	
+	private Logger logger = LoggerFactory.getLogger(DeliveryController.class);
 
 	@KafkaListener(topics = "new-stock", groupId = "stock-group")
 	public void deliverOrder(String event) throws JsonMappingException, JsonProcessingException {
-		System.out.println("Inside ship order for order "+event);
+		logger.debug("Inside ship order for order {} ", event);
 		
 		Delivery shipment = new Delivery();
 		DeliveryEvent inventoryEvent = new ObjectMapper().readValue(event, DeliveryEvent.class);
@@ -42,7 +45,9 @@ public class DeliveryController {
 			shipment.setStatus("success");
 
 			repository.save(shipment);
+			logger.info("Shipment saved successfully.");
 		} catch (Exception e) {
+			logger.error("Exception thrown in deliverOrder: {} ", e);
 			shipment.setOrderId(order.getOrderId());
 			shipment.setStatus("failed");
 			repository.save(shipment);

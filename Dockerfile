@@ -26,4 +26,4 @@ WORKDIR /app
 COPY --from=build /app/target/delivery-ms-*.jar /app/delivery-ms.jar
 
 # Expose the port your app runs on (replace with your actual port)
-EXPOSE 8084
+EXPOSE 8082
